@@ -64,11 +64,14 @@ def pop_fitness(pop):
     sum_pop = 0
 
     for i in pop:
-        sum_pop += fitness(i)
-
+        ind_sum = 0
+        for j in i:
+            ind_sum += d.weight[j]
+        if ind_sum <= 50:
+            sum_pop += ind_sum
     return sum_pop
 
-def evolve(pop, target = 50, retain=0.2, random_select=0.05, mutate=0.01):
+def evolve(pop, target = 50, retain=0.8, random_select=0.05, mutate=0.01):
 
     sorted_pop = [x[1] for x in sorted([(fitness(i), i) for i in pop]) ]
 
@@ -98,11 +101,13 @@ def evolve(pop, target = 50, retain=0.2, random_select=0.05, mutate=0.01):
     
             ind[pos_to_mutate] = ind_selected
 
-
     desired_length = len(pop) - len(parents)
     children = []
     
     while len(children) < desired_length:
+        # print len(parents), len(children)
+        if len(parents) < 2:
+            break
 
         male = random.randint(0, len(parents)-1)
         female = random.randint(0, len(parents)-1)
@@ -115,19 +120,39 @@ def evolve(pop, target = 50, retain=0.2, random_select=0.05, mutate=0.01):
             half_male = int(len(male_ind)/2)
             half_female = int(len(female_ind)/2)
             
-            child = male_ind[:half_male] + female_ind[half_female:]
+            child1 = male_ind[:half_male] + female_ind[half_female:]
+            child2 = male_ind[half_male:] + female_ind[:half_female]
 
-            children.append(child)
-    
-    parents.extend(children)
-    return parents
+            children.append(child1)
+            children.append(child2)
+
+            parents.remove(male_ind)
+            parents.remove(female_ind)
+
+    return children
 
 pop = population(1000)
+print pop_fitness(pop)
 
 generation = 0
 while (generation < 100):
     pop = evolve(pop)
-    print pop
-    inds_available = list(set(inds_available))
-    print pop_fitness(pop), len(inds_available)
+    # inds_available = list(set(inds_available))
+    print pop_fitness(pop), len(pop), len(inds_available)
     generation += 1
+
+final = []
+
+for i in pop:
+    arr = []
+    for j in i:
+        arr.append(d.GiftId[j])
+
+    final.append(arr)
+
+pd.DataFrame({"Gifts": [" ".join(b) for b in final]}).to_csv("sub_genetic.csv", sep=",", index=False)
+
+# f = open('sub_genetic.csv', 'wb')
+# for i in final:
+#     f.write()
+# f.close()

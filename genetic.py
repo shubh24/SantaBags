@@ -33,8 +33,8 @@ inds_available = [i for i in range(0, len(d))]
 
 def individual():
 
-    len_ind = random.randint(3, 9) #Figure this out!
-    # len_ind = 9
+    len_ind = random.randint(5, 9) #Figure this out!
+    # len_ind = 9    
 
     ind = []
 
@@ -71,7 +71,14 @@ def pop_fitness(pop):
             sum_pop += ind_sum
     return sum_pop
 
-def evolve(pop, target = 50, retain=0.8, random_select=0.05, mutate=0.01):
+def ind_fitness(ind):
+    s = sum([d.weight[i] for i in ind])
+    if s <= 50:
+        return s 
+    else:
+        return 0
+
+def evolve(pop, target = 50, retain=0.5, random_select=0.05, mutate=0.01):
 
     sorted_pop = [x[1] for x in sorted([(fitness(i), i) for i in pop]) ]
 
@@ -88,10 +95,7 @@ def evolve(pop, target = 50, retain=0.8, random_select=0.05, mutate=0.01):
                 inds_available.append(j)
 
     #Mutate some individuals
-    for ind_cou in range(0, len(parents)):
-        
-        ind = parents[ind_cou]
-        ind_cou += 1
+    for ind in parents:
 
         if mutate > random.random():
             pos_to_mutate = random.randint(0, len(ind)-1)
@@ -101,45 +105,59 @@ def evolve(pop, target = 50, retain=0.8, random_select=0.05, mutate=0.01):
     
             ind[pos_to_mutate] = ind_selected
 
-    desired_length = len(pop) - len(parents)
+    # desired_length = len(pop) - len(parents)
     children = []
-    
-    while len(children) < desired_length:
-        # print len(parents), len(children)
-        if len(parents) < 2:
+
+    while len(children) < len(pop):
+
+        if len(parents) < 1:
             break
 
         male = random.randint(0, len(parents)-1)
-        female = random.randint(0, len(parents)-1)
+    
+        male_ind = parents[male]
+        half_male = 4
         
-        if male != female:
+        female_ind = []
+        for i in range(0, 9):
+            ind_selected = inds_available[random.randint(0, len(inds_available)-1)]
+            female_ind.append(ind_selected)
+            inds_available.remove(ind_selected)        
 
-            male_ind = parents[male]
-            female_ind = parents[female]
-            
-            half_male = int(len(male_ind)/2)
-            half_female = int(len(female_ind)/2)
-            
-            child1 = male_ind[:half_male] + female_ind[half_female:]
-            child2 = male_ind[half_male:] + female_ind[:half_female]
+        # first_female = int(len(female_ind)/3)
+        # second_female = int(2*len(female_ind)/3)
+
+        child1 = male_ind[:4] + female_ind[4:]
+        child2 = male_ind[4:] + female_ind[:4]
+        # child3 = male_ind[first_male:second_male] + female_ind[first_female:second_female]
+
+        if ind_fitness(male_ind) + ind_fitness(female_ind) < ind_fitness(child1) + ind_fitness(child2):
+
+            # print ind_fitness(male_ind) + ind_fitness(female_ind), ind_fitness(child1) + ind_fitness(child2)
 
             children.append(child1)
             children.append(child2)
 
             parents.remove(male_ind)
-            parents.remove(female_ind)
+
+        else:
+            for j in female_ind:
+                inds_available.append(j)
+
+            children.append(male_ind)
 
     return children
 
 pop = population(1000)
-print pop_fitness(pop)
 
 generation = 0
 while (generation < 100):
     pop = evolve(pop)
-    # inds_available = list(set(inds_available))
-    print pop_fitness(pop), len(pop), len(inds_available)
+    inds_available = list(set(inds_available))
     generation += 1
+    print generation
+    if pop_fitness(pop) > 48000:
+        break
 
 final = []
 

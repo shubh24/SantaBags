@@ -23,7 +23,6 @@ def Weight(mType):
         return 3.0 + np.random.rand(1)[0] if np.random.rand(1) < 0.3 else np.random.rand(1)[0]
 
 
-
 d = pd.read_csv("gifts.csv")
 d['type'] = d['GiftId'].apply(lambda x: x.split('_')[0])
 d['id'] = d['GiftId'].apply(lambda x: x.split('_')[1])
@@ -33,7 +32,7 @@ inds_available = [i for i in range(0, len(d))]
 
 def individual():
 
-    len_ind = random.randint(5, 9) #Figure this out!
+    len_ind = random.randint(3, 9) #Figure this out!
     # len_ind = 9    
 
     ind = []
@@ -71,14 +70,7 @@ def pop_fitness(pop):
             sum_pop += ind_sum
     return sum_pop
 
-def ind_fitness(ind):
-    s = sum([d.weight[i] for i in ind])
-    if s <= 50:
-        return s 
-    else:
-        return 0
-
-def evolve(pop, target = 50, retain=0.5, random_select=0.05, mutate=0.01):
+def evolve(pop, target = 50, retain=0.8, random_select=0.05, mutate=0.01):
 
     sorted_pop = [x[1] for x in sorted([(fitness(i), i) for i in pop]) ]
 
@@ -101,76 +93,70 @@ def evolve(pop, target = 50, retain=0.5, random_select=0.05, mutate=0.01):
             pos_to_mutate = random.randint(0, len(ind)-1)
 
             ind_selected = inds_available[random.randint(0, len(inds_available)-1)]
-            inds_available.remove(ind_selected)
-    
+
+            inds_available.remove(ind_selected)            
+            inds_available.append(ind[pos_to_mutate])    
+
             ind[pos_to_mutate] = ind_selected
 
-    # desired_length = len(pop) - len(parents)
-    children = []
+    children = parents
+    # while len(parents) > 1:
 
-    while len(children) < len(pop):
-
-        if len(parents) < 1:
-            break
-
-        male = random.randint(0, len(parents)-1)
+    #     male = random.randint(0, len(parents)-1)
+    #     female = random.randint(0, len(parents)-1)
     
-        male_ind = parents[male]
-        half_male = 4
-        
+    #     if male != female:
+    #         male_ind = parents[male]
+    #         female_ind = parents[female]
+
+    #         half_male = int(len(male_ind)/2)
+    #         half_female = int(len(female_ind)/2)
+            
+    #         children.append(male_ind[:half_male] + female_ind[half_female:])
+    #         children.append(male_ind[half_male:] + female_ind[:half_female])
+    #         parents.remove(male_ind)
+    #         parents.remove(female_ind)
+    
+    while len(children) < 1000:
+
+        male_ind = []
         female_ind = []
-        for i in range(0, 9):
+
+        len_ind = random.randint(3, 9) #Figure this out!
+        half_ind = int(len_ind/2)
+
+        for i in range(0, len_ind):
+            ind_selected = inds_available[random.randint(0, len(inds_available)-1)]
+            male_ind.append(ind_selected)
+            inds_available.remove(ind_selected)        
+
+        for i in range(0, len_ind):
             ind_selected = inds_available[random.randint(0, len(inds_available)-1)]
             female_ind.append(ind_selected)
             inds_available.remove(ind_selected)        
-
-        # first_female = int(len(female_ind)/3)
-        # second_female = int(2*len(female_ind)/3)
-
-        child1 = male_ind[:4] + female_ind[4:]
-        child2 = male_ind[4:] + female_ind[:4]
-        # child3 = male_ind[first_male:second_male] + female_ind[first_female:second_female]
-
-        if ind_fitness(male_ind) + ind_fitness(female_ind) < ind_fitness(child1) + ind_fitness(child2):
-
-            # print ind_fitness(male_ind) + ind_fitness(female_ind), ind_fitness(child1) + ind_fitness(child2)
-
-            children.append(child1)
-            children.append(child2)
-
-            parents.remove(male_ind)
-
-        else:
-            for j in female_ind:
-                inds_available.append(j)
-
-            children.append(male_ind)
+        
+        children.append(male_ind[:half_ind] + female_ind[half_ind:])
+        children.append(male_ind[half_ind:] + female_ind[:half_ind])
 
     return children
 
-pop = population(1000)
+if __name__ == '__main__':
+    
+    pop = population(1000)
 
-generation = 0
-while (generation < 100):
-    pop = evolve(pop)
-    inds_available = list(set(inds_available))
-    generation += 1
-    print generation
-    if pop_fitness(pop) > 48000:
-        break
+    generation = 0
+    while (generation < 150):
+        pop = evolve(pop)
+        generation += 1
+        p_fitness = pop_fitness(pop)
+        print generation, round(p_fitness,2), len(inds_available)
 
-final = []
+    final = []
 
-for i in pop:
-    arr = []
-    for j in i:
-        arr.append(d.GiftId[j])
+    for i in pop:
+        arr = []
+        for j in i:
+            arr.append(d.GiftId[j])
+        final.append(arr)
 
-    final.append(arr)
-
-pd.DataFrame({"Gifts": [" ".join(b) for b in final]}).to_csv("sub_genetic.csv", sep=",", index=False)
-
-# f = open('sub_genetic.csv', 'wb')
-# for i in final:
-#     f.write()
-# f.close()
+    pd.DataFrame({"Gifts": [" ".join(b) for b in final]}).to_csv("sub_genetic.csv", sep=",", index=False)

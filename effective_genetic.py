@@ -108,11 +108,11 @@ def evolve(pop, target = 50, retain=0.55, random_select=0.05, mutate=0.01):
 
 if __name__ == '__main__':
     
-    pop = population(100)
+    pop = population(60)
 
     generation = 0
 
-    while (generation < 50):
+    while (generation < 20):
         pop = evolve(pop)
         generation += 1
         p_fitness = pop_fitness(pop)
@@ -123,31 +123,30 @@ if __name__ == '__main__':
     top_ind = pop[top_ind_counter]    
     
     for i in range(0, 1000):
-        flag = 1
         arr = []
         print i
-        while (flag == 1):
-            top_ind = pop[random.randint(0, len(pop) - 1)]
+        flag = 0
 
-            for j in range(0, len(top_ind)):
-        
-                for k in range(0, top_ind[j]):
+        top_ind = pop[random.randint(0, len(pop) - 1)]
 
-                    try:
-                        toy_selected = toy_arr[j][random.randint(0, len(toy_arr[j])-1)]
-                        toy_arr[j].remove(toy_selected)
+        for j in range(0, len(top_ind)):
+    
+            for k in range(0, top_ind[j]):
 
-                        arr.append(toy_selected)
-                        flag = 0
-                    except:
-                        pop.remove(top_ind)
-                        flag = 1
-                        print 'breaking', top_ind
-                        break
+                if len(toy_arr[j]) > 0:
+                    toy_selected = toy_arr[j][random.randint(0, len(toy_arr[j])-1)]
+                    toy_arr[j].remove(toy_selected)
 
-                if flag == 1:
+                    arr.append(toy_selected)
+                else:
+                    pop.remove(top_ind)
+                    flag = 1
                     break
 
-        final.append(arr)
+            if flag == 1:
+                break   
+        
+        if len(arr) > 3:                   
+            final.append(arr)
 
     pd.DataFrame({"Gifts": [" ".join(b) for b in final]}).to_csv("sub_eff_genetic.csv", sep=",", index=False)

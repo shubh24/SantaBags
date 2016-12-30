@@ -40,7 +40,7 @@ toy_arr = {
 }
 
 toy_map = {0:"horse", 1:"ball", 2:"bike", 3:"train", 4:"coal", 5:"book", 6:"doll", 7:"blocks", 8:"gloves"}
-max_toys = [4,4,4,4,0,4,4,4,4]
+max_toys = [2,2,2,2,2,2,2,2,2]
 
 def individual():
 
@@ -105,14 +105,14 @@ def evolve(pop, target = 50, retain=0.55, random_select=0.05, mutate=0.01):
         children.append(male_ind[half_ind:] + female_ind[:half_ind])
 
     return children
-import copy
+
 if __name__ == '__main__':
     
-    pop = population(60)
+    pop = population(100)
 
     generation = 0
 
-    while (generation < 10):
+    while (generation < 50):
         pop = evolve(pop)
         generation += 1
         p_fitness = pop_fitness(pop)
@@ -123,28 +123,30 @@ if __name__ == '__main__':
     top_ind = pop[top_ind_counter]    
     
     for i in range(0, 1000):
-        flag = 0
+        flag = 1
         arr = []
+        print i
+        while (flag == 1):
+            top_ind = pop[random.randint(0, len(pop) - 1)]
 
-        for j in range(0, len(top_ind)):
-    
-            for k in range(0, top_ind[j]):
+            for j in range(0, len(top_ind)):
+        
+                for k in range(0, top_ind[j]):
 
-                try:
-                    toy_selected = toy_arr[j][random.randint(0, len(toy_arr[j])-1)]
-                    toy_arr[j].remove(toy_selected)
+                    try:
+                        toy_selected = toy_arr[j][random.randint(0, len(toy_arr[j])-1)]
+                        toy_arr[j].remove(toy_selected)
 
-                    arr.append(toy_selected)
-                except:
-                    top_ind_counter += 1
-                    top_ind = pop[top_ind_counter]
-                    flag = 1
-                    i = 0
-                    print 'breaking'
+                        arr.append(toy_selected)
+                        flag = 0
+                    except:
+                        pop.remove(top_ind)
+                        flag = 1
+                        print 'breaking', top_ind
+                        break
+
+                if flag == 1:
                     break
-
-            if flag == 1:
-                break
 
         final.append(arr)
 

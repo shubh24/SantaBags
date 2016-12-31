@@ -40,17 +40,16 @@ toy_arr = {
 }
 
 toy_map = {0:"horse", 1:"ball", 2:"bike", 3:"train", 4:"coal", 5:"book", 6:"doll", 7:"blocks", 8:"gloves"}
-max_toys = [2,2,2,2,2,2,2,2,2]
 
-def individual():
+def individual(max_toys):
 
     knapsack = [int(math.floor(random.random()*max_toys[i])) for i in range(0, 9)]
 
     return knapsack
 
-def population(pop_count):
+def population(pop_count, max_toys):
 
-    return [individual() for i in range(0, pop_count)]
+    return [individual(max_toys) for i in range(0, pop_count)]
 
 def fitness(individual, target = 50):
 
@@ -85,13 +84,13 @@ def evolve(pop, target = 50, retain=0.55, random_select=0.05, mutate=0.01):
         if random_select > random.random():
             parents.append(i)
 
-    #Mutate some individuals
-    for ind in parents:
+    # #Mutate some individuals
+    # for ind in parents:
 
-        if mutate > random.random():
-            pos_to_mutate = random.randint(0, len(ind)-1)
+    #     if mutate > random.random():
+    #         pos_to_mutate = random.randint(0, len(ind)-1)
 
-            ind[pos_to_mutate] = int(math.floor(random.random()*max_toys[pos_to_mutate]))
+    #         ind[pos_to_mutate] = int(math.floor(random.random()*max_toys[pos_to_mutate]))
 
     children = parents
      
@@ -107,46 +106,61 @@ def evolve(pop, target = 50, retain=0.55, random_select=0.05, mutate=0.01):
     return children
 
 if __name__ == '__main__':
-    
-    pop = population(60)
-
-    generation = 0
-
-    while (generation < 20):
-        pop = evolve(pop)
-        generation += 1
-        p_fitness = pop_fitness(pop)
-        print generation, round(p_fitness,2)
 
     final = []
-    top_ind_counter = 0
-    top_ind = pop[top_ind_counter]    
     
-    for i in range(0, 1000):
-        arr = []
-        print i
-        flag = 0
+    for iteration in range(0, 3):
+        if iteration == 0:
+            max_toys = [2,2,0,2,0,2,2,2,0]
+            iter_count = 600
+        if iteration == 1:
+            max_toys = [2,2,2,2,0,2,2,2,0]
+            iter_count = 200
+        if iteration == 2:
+            max_toys = [3,2,2,2,0,2,2,2,2]
+            iter_count = 200
 
-        top_ind = pop[random.randint(0, len(pop) - 1)]
+        pop = population(200, max_toys)
 
-        for j in range(0, len(top_ind)):
-    
-            for k in range(0, top_ind[j]):
+        generation = 0
+        
+        while (generation < 100):
+            pop = evolve(pop)
+            generation += 1
+            p_fitness = pop_fitness(pop)
+            print generation, round(p_fitness,2)
 
-                if len(toy_arr[j]) > 0:
+        pop = [x[1] for x in sorted([(fitness(i), i) for i in pop], reverse = True)]
+
+        for i in range(0, len(pop)):
+
+            flag = 0
+            top_ind = pop[i]
+
+            for j in range(0, len(top_ind)):
+
+                if top_ind[j]*iter_count > len(toy_arr[j]):
+                    flag = 1
+                    break
+
+            if flag == 0 and j == len(top_ind)-1:
+                break
+
+        print top_ind, fitness(top_ind)
+        
+        for i in range(0, iter_count):
+            arr = []
+
+            for j in range(0, len(top_ind)):
+        
+                for k in range(0, top_ind[j]):
+
                     toy_selected = toy_arr[j][random.randint(0, len(toy_arr[j])-1)]
                     toy_arr[j].remove(toy_selected)
 
                     arr.append(toy_selected)
-                else:
-                    pop.remove(top_ind)
-                    flag = 1
-                    break
-
-            if flag == 1:
-                break   
-        
-        if len(arr) > 3:                   
-            final.append(arr)
+                            
+            if len(arr) > 3:                   
+                final.append(arr)
 
     pd.DataFrame({"Gifts": [" ".join(b) for b in final]}).to_csv("sub_eff_genetic.csv", sep=",", index=False)

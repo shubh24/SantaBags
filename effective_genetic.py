@@ -43,8 +43,13 @@ toy_map = {0:"horse", 1:"ball", 2:"bike", 3:"train", 4:"coal", 5:"book", 6:"doll
 
 def individual(max_toys):
 
-    knapsack = [int(math.floor(random.random()*max_toys[i])) for i in range(0, 9)]
+    print max_toys
+    knapsack = []
 
+    for i in range(0, 9):
+        knapsack.append(random.randint(0, max_toys[i]))
+
+    print knapsack
     return knapsack
 
 def population(pop_count, max_toys):
@@ -101,7 +106,7 @@ def evolve(pop, target = 50, retain=0.55, random_select=0.05, mutate=0.01):
         half_ind = int(len(male_ind)/2)
 
         children.append(male_ind[:half_ind] + female_ind[half_ind:])
-        children.append(male_ind[half_ind:] + female_ind[:half_ind])
+        children.append(female_ind[:half_ind] + male_ind[half_ind:])
 
     return children
 
@@ -109,22 +114,53 @@ if __name__ == '__main__':
 
     final = []
     
-    for iteration in range(0, 3):
+    # toy_map = {0:"horse", 1:"ball", 2:"bike", 3:"train", 4:"coal", 5:"book", 6:"doll", 7:"blocks", 8:"gloves"}
+    # num_gifts_available = {
+    # "horse": 1000,
+    # "ball": 1100,
+    # "bike": 500,
+    # "train": 1000,
+    # "coal": 166
+    # "book": 1200,
+    # "doll": 1000,
+    # "blocks": 1000,
+    # "gloves": 200,
+    #     # }
+
+    #                  mean         std
+    # ball     1.999359    0.090615
+    # bike    20.229937   95.694407
+    # blocks  11.613023    9.512805
+    # book     2.005699    4.073323
+    # coal    23.510956  277.100329
+    # doll     5.006272    5.037590
+    # gloves   1.414070    1.983514
+    # horse    5.008280    3.892144
+    # train   10.088743   24.050936
+
+    for iteration in range(0, 4): #try and make a dynamic max_toys -- not working
         if iteration == 0:
-            max_toys = [2,2,0,2,0,2,2,2,0]
+            max_toys = [1,1,0,1,0,1,1,1,0]
             iter_count = 600
         if iteration == 1:
-            max_toys = [2,2,2,2,0,2,2,2,0]
+            max_toys = [1,1,1,1,0,2,1,1,0]
             iter_count = 200
         if iteration == 2:
-            max_toys = [3,2,2,2,0,2,2,2,2]
-            iter_count = 200
+            max_toys = [1,2,2,1,0,1,1,1,1]
+            iter_count = 100
+        if iteration == 3:
+            max_toys = [1,1,1,1,1,1,1,1,1]
+            iter_count = 100
 
-        pop = population(200, max_toys)
+        # max_toys = [min(4, len(toy_arr[i])/100) for i in range(0, len(toy_arr))]
+        # print max_toys
+        # iter_count = 100
+
+        pop = population(100, max_toys)
 
         generation = 0
         
-        while (generation < 100):
+        while (generation < 15):
             pop = evolve(pop)
             generation += 1
             p_fitness = pop_fitness(pop)

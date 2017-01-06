@@ -43,13 +43,11 @@ toy_map = {0:"horse", 1:"ball", 2:"bike", 3:"train", 4:"coal", 5:"book", 6:"doll
 
 def individual(max_toys):
 
-    print max_toys
     knapsack = []
 
     for i in range(0, 9):
         knapsack.append(random.randint(0, max_toys[i]))
 
-    print knapsack
     return knapsack
 
 def population(pop_count, max_toys):
@@ -76,7 +74,7 @@ def pop_fitness(pop):
     return sum([fitness(i) for i in pop])/len(pop)
 
 
-def evolve(pop, target = 50, retain=0.55, random_select=0.05, mutate=0.01):
+def evolve(pop, max_toys, target = 50, retain=0.55, random_select=0.05, mutate=0.01):
 
     sorted_pop = [x[1] for x in sorted([(fitness(i), i) for i in pop], reverse = True)]
 
@@ -89,18 +87,22 @@ def evolve(pop, target = 50, retain=0.55, random_select=0.05, mutate=0.01):
         if random_select > random.random():
             parents.append(i)
 
-    # #Mutate some individuals
-    # for ind in parents:
+    #Mutate some individuals
+    for ind in parents:
 
-    #     if mutate > random.random():
-    #         pos_to_mutate = random.randint(0, len(ind)-1)
-
-    #         ind[pos_to_mutate] = int(math.floor(random.random()*max_toys[pos_to_mutate]))
+        if mutate > random.random():
+            pos_to_mutate = random.randint(0, len(ind)-1)
+            old_val = ind[pos_to_mutate]
+            
+            f = random.randint(0, max_toys[pos_to_mutate])
+            while f == old_val:
+                f = random.randint(0, max_toys[pos_to_mutate])
+            
+            ind[pos_to_mutate] = f
 
     children = parents
-     
+    
     while len(children) < len(pop):
-
         male_ind = parents[random.randint(0, len(parents)-1)]
         female_ind = parents[random.randint(0, len(parents)-1)]
         half_ind = int(len(male_ind)/2)
@@ -115,6 +117,7 @@ if __name__ == '__main__':
     final = []
     
     # toy_map = {0:"horse", 1:"ball", 2:"bike", 3:"train", 4:"coal", 5:"book", 6:"doll", 7:"blocks", 8:"gloves"}
+    
     # num_gifts_available = {
     # "horse": 1000,
     # "ball": 1100,
@@ -138,65 +141,78 @@ if __name__ == '__main__':
     # horse    5.008280    3.892144
     # train   10.088743   24.050936
 
-    for iteration in range(0, 4): #try and make a dynamic max_toys -- not working
+    for iteration in range(0, 1): #try and make a dynamic max_toys -- not working
         if iteration == 0:
-            max_toys = [1,1,0,1,0,1,1,1,0]
-            iter_count = 600
-        if iteration == 1:
-            max_toys = [1,1,1,1,0,2,1,1,0]
-            iter_count = 200
-        if iteration == 2:
-            max_toys = [1,2,2,1,0,1,1,1,1]
+            max_toys = [4,4,4,4,1,4,4,4,2]
             iter_count = 100
-        if iteration == 3:
-            max_toys = [1,1,1,1,1,1,1,1,1]
-            iter_count = 100
+        # if iteration == 0:
+        #     max_toys = [1,1,0,1,0,1,1,1,0]
+        #     iter_count = 100
+        # if iteration == 1:
+        #     max_toys = [1,1,1,1,0,2,1,1,0]
+        #     iter_count = 200
+        # if iteration == 2:
+        #     max_toys = [1,2,2,1,0,1,1,1,1]
+        #     iter_count = 100
+        # if iteration == 3:
+        #     max_toys = [1,1,1,1,1,1,1,1,1]
+        #     iter_count = 100
 
         # max_toys = [min(4, len(toy_arr[i])/100) for i in range(0, len(toy_arr))]
-        # print max_toys
         # iter_count = 100
 
-        pop = population(100, max_toys)
+        pop = population(500, max_toys)
 
         generation = 0
         
-        while (generation < 15):
-            pop = evolve(pop)
+        while (generation < 30):
+            pop = evolve(pop, max_toys)
             generation += 1
             p_fitness = pop_fitness(pop)
-            print generation, round(p_fitness,2)
+            
+            # fit_pop = [sorted([(fitness(i), i) for i in pop], reverse = True)]
+            # print fit_pop
 
-        pop = [x[1] for x in sorted([(fitness(i), i) for i in pop], reverse = True)]
+            print "GENERATION", generation, round(p_fitness,2)
 
-        for i in range(0, len(pop)):
+        pop = [sorted([(fitness(i), i) for i in pop], reverse = True)]
+        from pprint import pprint
 
-            flag = 0
-            top_ind = pop[i]
+        pprint(pop)
 
-            for j in range(0, len(top_ind)):
+        # pop = [x[1] for x in sorted([(fitness(i), i) for i in pop], reverse = True)]
 
-                if top_ind[j]*iter_count > len(toy_arr[j]):
-                    flag = 1
-                    break
+    #     for i in range(0, len(pop)):
 
-            if flag == 0 and j == len(top_ind)-1:
-                break
+    #         flag = 0
+    #         top_ind = pop[i]
 
-        print top_ind, fitness(top_ind)
+    #         for j in range(0, len(top_ind)):
+
+    #             if top_ind[j]*iter_count > len(toy_arr[j]):
+    #                 flag = 1
+    #                 break
+
+    #         if flag == 0 and j == len(top_ind)-1:
+    #             break
+
+    #     print top_ind, fitness(top_ind)
         
-        for i in range(0, iter_count):
-            arr = []
+    #     for i in range(0, iter_count):
+    #         arr = []
 
-            for j in range(0, len(top_ind)):
+    #         for j in range(0, len(top_ind)):
         
-                for k in range(0, top_ind[j]):
+    #             for k in range(0, top_ind[j]):
 
-                    toy_selected = toy_arr[j][random.randint(0, len(toy_arr[j])-1)]
-                    toy_arr[j].remove(toy_selected)
+    #                 toy_selected = toy_arr[j][random.randint(0, len(toy_arr[j])-1)]
+    #                 toy_arr[j].remove(toy_selected)
 
-                    arr.append(toy_selected)
+    #                 arr.append(toy_selected)
                             
-            if len(arr) > 3:                   
-                final.append(arr)
+    #         if len(arr) > 3:                   
+    #             final.append(arr)
 
-    pd.DataFrame({"Gifts": [" ".join(b) for b in final]}).to_csv("sub_eff_genetic.csv", sep=",", index=False)
+    # pd.DataFrame({"Gifts": [" ".join(b) for b in final]}).to_csv("sub_eff_genetic.csv", sep=",", index=False)
+
+#first 200 --> [2,4,0,0,0,1,1,1,1]

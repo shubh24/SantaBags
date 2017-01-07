@@ -94,15 +94,12 @@ def evolve(pop, max_toys, target = 50, retain=0.55, random_select=0.05, mutate=0
             pos_to_mutate = random.randint(0, len(ind)-1)
             old_val = ind[pos_to_mutate]
             
-            f = random.randint(0, max_toys[pos_to_mutate])
-            while f == old_val:
-                f = random.randint(0, max_toys[pos_to_mutate])
-            
-            ind[pos_to_mutate] = f
+            ind[pos_to_mutate] = random.randint(0, max_toys[pos_to_mutate])
 
     children = parents
     
     while len(children) < len(pop):
+
         male_ind = parents[random.randint(0, len(parents)-1)]
         female_ind = parents[random.randint(0, len(parents)-1)]
         half_ind = int(len(male_ind)/2)
@@ -141,13 +138,14 @@ if __name__ == '__main__':
     # horse    5.008280    3.892144
     # train   10.088743   24.050936
 
-    for iteration in range(0, 1): #try and make a dynamic max_toys -- not working
-        if iteration == 0:
-            max_toys = [4,4,4,4,1,4,4,4,2]
-            iter_count = 100
+    for iteration in range(0, 10): #dynamic max_toys 
+
+        #OLD RUNNING
+
         # if iteration == 0:
         #     max_toys = [1,1,0,1,0,1,1,1,0]
         #     iter_count = 100
+
         # if iteration == 1:
         #     max_toys = [1,1,1,1,0,2,1,1,0]
         #     iter_count = 200
@@ -158,61 +156,51 @@ if __name__ == '__main__':
         #     max_toys = [1,1,1,1,1,1,1,1,1]
         #     iter_count = 100
 
-        # max_toys = [min(4, len(toy_arr[i])/100) for i in range(0, len(toy_arr))]
-        # iter_count = 100
+        max_toys = [min(4, len(toy_arr[i])/100) for i in range(0, len(toy_arr))]
+        iter_count = 100
 
         pop = population(500, max_toys)
 
         generation = 0
         
-        while (generation < 30):
+        while (generation < 40):
             pop = evolve(pop, max_toys)
             generation += 1
             p_fitness = pop_fitness(pop)
             
-            # fit_pop = [sorted([(fitness(i), i) for i in pop], reverse = True)]
-            # print fit_pop
-
             print "GENERATION", generation, round(p_fitness,2)
 
-        pop = [sorted([(fitness(i), i) for i in pop], reverse = True)]
-        from pprint import pprint
+        pop = [x[1] for x in sorted([(fitness(i), i) for i in pop], reverse = True)]
 
-        pprint(pop)
+        for i in range(0, len(pop)):
 
-        # pop = [x[1] for x in sorted([(fitness(i), i) for i in pop], reverse = True)]
+            flag = 0
+            top_ind = pop[i]
 
-    #     for i in range(0, len(pop)):
+            for j in range(0, len(top_ind)):
 
-    #         flag = 0
-    #         top_ind = pop[i]
+                if top_ind[j]*iter_count > len(toy_arr[j]):
+                    flag = 1
+                    break
 
-    #         for j in range(0, len(top_ind)):
+            if flag == 0 and j == len(top_ind)-1:
+                break
 
-    #             if top_ind[j]*iter_count > len(toy_arr[j]):
-    #                 flag = 1
-    #                 break
-
-    #         if flag == 0 and j == len(top_ind)-1:
-    #             break
-
-    #     print top_ind, fitness(top_ind)
+        print top_ind, fitness(top_ind)
         
-    #     for i in range(0, iter_count):
-    #         arr = []
+        for i in range(0, iter_count):
+            arr = []
 
-    #         for j in range(0, len(top_ind)):
+            for j in range(0, len(top_ind)):
         
-    #             for k in range(0, top_ind[j]):
+                for k in range(0, top_ind[j]):
 
-    #                 toy_selected = toy_arr[j][random.randint(0, len(toy_arr[j])-1)]
-    #                 toy_arr[j].remove(toy_selected)
+                    toy_selected = toy_arr[j][random.randint(0, len(toy_arr[j])-1)]
+                    toy_arr[j].remove(toy_selected)
 
-    #                 arr.append(toy_selected)
+                    arr.append(toy_selected)
                             
-    #         if len(arr) > 3:                   
-    #             final.append(arr)
+            if len(arr) > 3:                   
+                final.append(arr)
 
-    # pd.DataFrame({"Gifts": [" ".join(b) for b in final]}).to_csv("sub_eff_genetic.csv", sep=",", index=False)
-
-#first 200 --> [2,4,0,0,0,1,1,1,1]
+    pd.DataFrame({"Gifts": [" ".join(b) for b in final]}).to_csv("sub_eff_genetic.csv", sep=",", index=False)
